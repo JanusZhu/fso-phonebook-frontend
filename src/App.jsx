@@ -1,5 +1,7 @@
 import { useState } from "react";
-
+import Filter from "./components/Filter";
+import PersonForm from "./components/PersonForm";
+import Persons from "./components/Persons";
 const App = () => {
   const [persons, setPersons] = useState([
     { name: "Arto Hellas", number: "040-123456", id: 1 },
@@ -10,6 +12,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filterString, setFilterString] = useState("");
+
   const genNewId = () => {
     return Math.floor(Math.random() * 1000);
   };
@@ -33,9 +36,7 @@ const App = () => {
   const changeNewNumber = (e) => {
     setNewNumber(e.target.value);
   };
-  const changeFilterString = (e) => {
-    setFilterString(e.target.value);
-  };
+
   const personsToShow = filterString
     ? persons.filter((person) =>
         person.name.toLowerCase().includes(filterString.toLowerCase())
@@ -44,30 +45,13 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <h2>Filter</h2>
-      <div>
-        filter shown with: <input onChange={changeFilterString} />
-      </div>
-      <h2>Add a new person</h2>
-      <form onSubmit={addPerson}>
-        <div>
-          name: <input onChange={changeNewName} />
-        </div>
-        <div>
-          number: <input onChange={changeNewNumber} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
-      <h2>Numbers</h2>
-      <ul>
-        {personsToShow.map((person) => (
-          <li key={person.id}>
-            {person.name} {person.number}
-          </li>
-        ))}
-      </ul>
+      <Filter filterString={filterString} setFilterString={setFilterString} />
+      <PersonForm
+        addPerson={addPerson}
+        changeNewName={changeNewName}
+        changeNewNumber={changeNewNumber}
+      />
+      <Persons personsToShow={personsToShow} />
     </div>
   );
 };
