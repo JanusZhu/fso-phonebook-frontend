@@ -1,26 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import personService from "./services/persons";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456", id: 1 },
-    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
-    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
-    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filterString, setFilterString] = useState("");
-
   const genNewId = () => {
     return Math.floor(Math.random() * 1000);
   };
+  useEffect(() => {
+    personService.getAll().then((response) => {
+      console.log("promise fulfilled");
+      setPersons(response.data);
+    });
+  }, []);
   const addPerson = (e) => {
     e.preventDefault();
     const duplicatePerson = persons.find((person) => person.name === newName);
     if (duplicatePerson) {
-      alert(`${newName} is already added to the phonebook`);
+      if (
+        window.confirm(
+          `${newName} is already added to the phonebook, replace the old number with a new one?`
+        )
+      ) {
+        const updatedPerson = { ...duplicatePerson, number: newNumber };
+        personService
+          .update(updatedPerson.id, updatedPerson)
+          .then((response) => {
+            setPersons(
+              persons.map((p) =>
+                p.id !== updatedPerson.id ? p : response.data
+              )
+            );
+          });
+      }
       return;
     }
     const newPerson = {
@@ -28,7 +44,10 @@ const App = () => {
       number: newNumber,
       id: genNewId(),
     };
-    setPersons(persons.concat(newPerson));
+    personService.create(newPerson).then((response) => {
+      setPersons(persons.concat(newPerson));
+      console.log(response);
+    });
   };
   const changeNewName = (e) => {
     setNewName(e.target.value);
@@ -51,7 +70,7 @@ const App = () => {
         changeNewName={changeNewName}
         changeNewNumber={changeNewNumber}
       />
-      <Persons personsToShow={personsToShow} />
+      <Persons personsToShow={personsToShow} setPersons={setPersons} />
     </div>
   );
 };
